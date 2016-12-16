@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import fc.com.library.lifecycle.FragmentLifecycle;
 import fc.com.library.lifecycle.Lifecycle;
 import fc.com.library.lifecycle.LifecycleManager;
 import fc.com.library.mvp.framework.presenter.ViewDelegatePresenter;
@@ -28,6 +29,8 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
     private ViewDelegateActivityListener activityListener = new ViewDelegateActivityListener(this);
     private ViewDelegateFragmentListener fragmentListener = new ViewDelegateFragmentListener(this);
     private Object object;
+    private Context context;
+    private boolean isViewCreated;
 
     public ViewDelegate() {
         presenter = createPresenter();
@@ -50,6 +53,9 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
             } else {
                 throw new IllegalArgumentException("context must be Activity or FragmentActivity");
             }
+            if (isViewCreated && !isBinded()) {
+                bindView(null);
+            }
         }
     }
 
@@ -71,31 +77,38 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
             this.parentView = view;
             object = fragment;
             lifecycle = LifecycleManager.get().bind(fragment, fragmentListener);
+            if (isViewCreated && !isBinded()) {
+                bindView(null);
+            }
         }
     }
 
-    /**
-     * not allow Override, please use onBinded method
-     * onBinded to onCreate, onUnBinded to onDestroy
-     * @param saveInstanceState
-     */
-    protected final void onCreate(Bundle saveInstanceState) {
-        bindView(parentView, saveInstanceState);
+    final void onViewCreated(Bundle saveInstanceState) {
+        isViewCreated = true;
+        bindView(saveInstanceState);
     }
 
-    private final void bindView(View parent, Bundle savedInstanceState) {
-        if (parent != null && parent instanceof ViewGroup) {
+    final void onDestroyView() {
+        isViewCreated = false;
+        unBind();
+    }
+
+    final void bindView(Bundle savedInstanceState) {
+//        if (isBinded()) {
+//            return ;
+//        }
+        if (parentView != null && parentView instanceof ViewGroup) {
             if (this.rootView == null) {
-                View rootView = onCreateView(LayoutInflater.from(parent.getContext()), (ViewGroup) parent, savedInstanceState);
+                View rootView = onCreateView(LayoutInflater.from(parentView.getContext()), (ViewGroup) parentView, savedInstanceState);
                 if (rootView != null) {
-                    if (rootView != parent) {
-                        ((ViewGroup) parent).addView(rootView);
+                    if (rootView != parentView) {
+                        ((ViewGroup) parentView).addView(rootView);
                         this.rootView = rootView;
                     } else {
                         if (hasCreatedView()) {
-                            this.rootView = ((ViewGroup) parent).getChildAt(((ViewGroup) parent).getChildCount() - 1);
+                            this.rootView = ((ViewGroup) parentView).getChildAt(((ViewGroup) parentView).getChildCount() - 1);
                         } else {
-                            this.rootView = parent;
+                            this.rootView = parentView;
                         }
                     }
                 } else {
@@ -103,14 +116,13 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
                 }
                 onViewCreated(rootView, savedInstanceState);
             } else {
-                if (parent != rootView) {
-                    ((ViewGroup) parent).addView(rootView);
+                if (parentView != rootView) {
+                    ((ViewGroup) parentView).addView(rootView);
                 }
             }
         }
         onBinded(rootView, savedInstanceState);
         this.isBinded = true;
-        this.parentView = parent;
     }
 
     protected boolean hasCreatedView() {
@@ -148,10 +160,9 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
             }
             parentView = null;
         }
-        unBindLifecycle(object);
+
         if (isBinded) {
             onUnBinded();
-            onDestroy();
             this.isBinded = false;
         }
     }
@@ -168,39 +179,32 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
         }
     }
 
-    protected View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                Bundle savedInstanceState) {
-
-        return null;
-    }
-
-    /**
-     * only call for create view
-     * @param rootView
-     * @param savedInstanceState
-     */
-    protected void onViewCreated(View rootView, Bundle savedInstanceState) {
-        if (presenter != null) {
-            presenter.onViewCreated(savedInstanceState);
-        }
-    }
-
     public final View getRootView() {
         return rootView;
     }
 
     public Context getContext() {
         if (rootView != null) {
-            return rootView.getContext();
+            context = rootView.getContext();
         } else if (parentView != null) {
-            return parentView.getContext();
+            context = parentView.getContext();
         }
-        return null;
+        return context;
     }
 
     protected void onSavedInstanceState(Bundle savedInstanceState) {
         if (presenter != null) {
             presenter.onSavedInstanceState(savedInstanceState);
+        }
+    }
+
+    protected View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return container;
+    }
+
+    protected void onViewCreated(View rootView, Bundle savedInstanceState) {
+        if (presenter != null) {
+            presenter.onViewCreated(savedInstanceState);
         }
     }
 
@@ -228,15 +232,18 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
         }
     }
 
-    /**
-     * please use onUnBinded method
-     * onBinded to onCreate, onUnBinded to onDestroy
-     */
-    @Deprecated
+
+    protected void onCreate(Bundle saveInstanceState) {
+        if (presenter != null) {
+            presenter.onCreate(saveInstanceState);
+        }
+    }
+
     protected void onDestroy() {
-//        if (presenter != null) {
-//            presenter.onDestroy();
-//        }
+        unBindLifecycle(object);
+        if (presenter != null) {
+            presenter.onDestroy();
+        }
     }
 
     public final boolean isResume() {

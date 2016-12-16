@@ -68,4 +68,11 @@ public abstract class ViewDelegatePresenter<M extends IModel, V extends IView> e
         unsubscribe();
     }
 
+    public void onDestroy() {
+
+    }
+
+    public void onCreate(Bundle savedInstanceState) {
+
+    }
 }

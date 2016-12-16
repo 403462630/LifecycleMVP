@@ -24,6 +24,7 @@ public class ViewDelegateActivityListener implements ActivityLifecycleListener {
     @Override
     public void onCreate(Bundle outState) {
         viewDelegate.onCreate(outState);
+        viewDelegate.onViewCreated(outState);
     }
 
     @Override
@@ -48,6 +49,7 @@ public class ViewDelegateActivityListener implements ActivityLifecycleListener {
 
     @Override
     public void onDestroy() {
-        viewDelegate.onUnBinded();
+        viewDelegate.onDestroyView();
+        viewDelegate.onDestroy();
     }
 }

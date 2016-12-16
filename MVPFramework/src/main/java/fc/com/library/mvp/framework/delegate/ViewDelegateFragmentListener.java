@@ -28,12 +28,12 @@ public class ViewDelegateFragmentListener implements FragmentLifecycleListener {
 
     @Override
     public void onViewCreated(Bundle outState) {
-        viewDelegate.onCreate(outState);
+        viewDelegate.onViewCreated(outState);
     }
 
     @Override
     public void onDestroyView() {
-        viewDelegate.unBind();
+        viewDelegate.onDestroyView();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class ViewDelegateFragmentListener implements FragmentLifecycleListener {
 
     @Override
     public void onCreate(Bundle outState) {
-
+        viewDelegate.onCreate(outState);
     }
 
     @Override
