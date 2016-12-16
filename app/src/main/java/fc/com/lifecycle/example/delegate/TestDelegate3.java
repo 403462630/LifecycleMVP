@@ -69,4 +69,16 @@ public class TestDelegate3 extends ViewDelegate {
         super.onStop();
         Log.i(TAG, "-----onStop");
     }
+
+    @Override
+    protected void onCreate(Bundle saveInstanceState) {
+        super.onCreate(saveInstanceState);
+        Log.i(TAG, "-----onCreate");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "-----onDestroy");
+    }
 }

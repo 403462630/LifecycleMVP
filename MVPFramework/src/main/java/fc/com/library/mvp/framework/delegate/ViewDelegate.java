@@ -93,27 +93,31 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
         unBind();
     }
 
+    private void createRootView(Bundle savedInstanceState) {
+        View rootView = onCreateView(LayoutInflater.from(parentView.getContext()), (ViewGroup) parentView, savedInstanceState);
+        if (rootView != null) {
+            if (rootView != parentView) {
+                ((ViewGroup) parentView).addView(rootView);
+                this.rootView = rootView;
+            } else {
+                if (hasCreatedView()) {
+                    this.rootView = ((ViewGroup) parentView).getChildAt(((ViewGroup) parentView).getChildCount() - 1);
+                } else {
+                    this.rootView = parentView;
+                }
+            }
+        } else {
+            this.rootView = null;
+        }
+    }
+
     final void bindView(Bundle savedInstanceState) {
-//        if (isBinded()) {
-//            return ;
-//        }
+        if (isBinded()) {
+            return ;
+        }
         if (parentView != null && parentView instanceof ViewGroup) {
             if (this.rootView == null) {
-                View rootView = onCreateView(LayoutInflater.from(parentView.getContext()), (ViewGroup) parentView, savedInstanceState);
-                if (rootView != null) {
-                    if (rootView != parentView) {
-                        ((ViewGroup) parentView).addView(rootView);
-                        this.rootView = rootView;
-                    } else {
-                        if (hasCreatedView()) {
-                            this.rootView = ((ViewGroup) parentView).getChildAt(((ViewGroup) parentView).getChildCount() - 1);
-                        } else {
-                            this.rootView = parentView;
-                        }
-                    }
-                } else {
-                    this.rootView = null;
-                }
+                createRootView(savedInstanceState);
                 onViewCreated(rootView, savedInstanceState);
             } else {
                 if (parentView != rootView) {
@@ -192,6 +196,8 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
         return context;
     }
 
+    protected boolean
+
     protected void onSavedInstanceState(Bundle savedInstanceState) {
         if (presenter != null) {
             presenter.onSavedInstanceState(savedInstanceState);
@@ -231,7 +237,6 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
             presenter.onStop();
         }
     }
-
 
     protected void onCreate(Bundle saveInstanceState) {
         if (presenter != null) {

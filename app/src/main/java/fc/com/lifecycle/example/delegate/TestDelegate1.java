@@ -75,4 +75,16 @@ public class TestDelegate1 extends ViewDelegate {
         super.onBinded(rootView, savedInstanceState);
         Log.i(TAG, "-----onBinded");
     }
+
+    @Override
+    protected void onCreate(Bundle saveInstanceState) {
+        super.onCreate(saveInstanceState);
+        Log.i(TAG, "-----onCreate");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "-----onDestroy");
+    }
 }
