@@ -92,7 +92,11 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
                         ((ViewGroup) parent).addView(rootView);
                         this.rootView = rootView;
                     } else {
-                        this.rootView = parent;
+                        if (hasCreatedView()) {
+                            this.rootView = ((ViewGroup) parent).getChildAt(((ViewGroup) parent).getChildCount() - 1);
+                        } else {
+                            this.rootView = parent;
+                        }
                     }
                 } else {
                     this.rootView = null;
@@ -107,6 +111,10 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
         onBinded(rootView, savedInstanceState);
         this.isBinded = true;
         this.parentView = parent;
+    }
+
+    protected boolean hasCreatedView() {
+        return true;
     }
 
     public final View findViewById(int id) {

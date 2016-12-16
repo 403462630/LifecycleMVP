@@ -32,7 +32,7 @@ public class TestFragmentActivity extends FragmentActivity {
         findViewById(R.id.bt_1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FragmentUtils.pushFragment(getSupportFragmentManager(), testFragment1);
+                FragmentUtils.pushFragment(getSupportFragmentManager(), testFragment1, true);
             }
         });
         findViewById(R.id.bt_3).setOnClickListener(new View.OnClickListener() {
@@ -44,7 +44,7 @@ public class TestFragmentActivity extends FragmentActivity {
         findViewById(R.id.bt_2).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FragmentUtils.pushFragment(getSupportFragmentManager(), testFragment2);
+                FragmentUtils.pushFragment(getSupportFragmentManager(), testFragment2, true);
             }
         });
         findViewById(R.id.bt_4).setOnClickListener(new View.OnClickListener() {

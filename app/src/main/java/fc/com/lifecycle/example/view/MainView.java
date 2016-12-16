@@ -6,7 +6,7 @@ import fc.com.lifecycle.example.presenter.MainPresenter;
 /**
  * Created by rjhy on 16-12-13
  */
-public interface MainView extends IView<MainPresenter> {
+public interface MainView extends IView {
     public void showProgress();
     public void showContent();
 }
