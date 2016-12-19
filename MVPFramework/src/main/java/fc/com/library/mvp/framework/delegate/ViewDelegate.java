@@ -9,11 +9,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import fc.com.library.lifecycle.FragmentLifecycle;
 import fc.com.library.lifecycle.Lifecycle;
 import fc.com.library.lifecycle.LifecycleManager;
 import fc.com.library.mvp.framework.presenter.ViewDelegatePresenter;
-
 
 /**
  * @author rjhy
@@ -21,6 +19,9 @@ import fc.com.library.mvp.framework.presenter.ViewDelegatePresenter;
  * @desc desc
  */
 public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
+    public static final int STATE_ON_START = 0x01;
+    public static final int STATE_ON_RESUME = 0x02;
+
     private View parentView;
     private View rootView;
     protected T presenter;
@@ -31,6 +32,7 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
     private Object object;
     private Context context;
     private boolean isViewCreated;
+    private int state;
 
     public ViewDelegate() {
         presenter = createPresenter();
@@ -126,6 +128,9 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
             }
         }
         onBinded(rootView, savedInstanceState);
+        if (isCallLifecycle()) {
+            callBindLifecycle();
+        }
         this.isBinded = true;
     }
 
@@ -138,6 +143,30 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
             return getRootView().findViewById(id);
         }
         return null;
+    }
+
+    private void callBindLifecycle() {
+        if (lifecycle == null || !lifecycle.isStart()) {
+            return ;
+        }
+        onStart();
+
+        if (lifecycle == null || !lifecycle.isResume()) {
+            return ;
+        }
+        onResume();
+    }
+
+    private void callUnbindLifecycle() {
+        if ((state & STATE_ON_RESUME) == 0) {
+            return ;
+        }
+        onPause();
+
+        if ((state & STATE_ON_START) == 0) {
+            return ;
+        }
+        onStop();
     }
 
     protected void onBinded(View rootView, Bundle savedInstanceState) {
@@ -166,6 +195,9 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
         }
 
         if (isBinded) {
+            if (isCallLifecycle()) {
+                callUnbindLifecycle();
+            }
             onUnBinded();
             this.isBinded = false;
         }
@@ -196,7 +228,9 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
         return context;
     }
 
-    protected boolean
+    protected boolean isCallLifecycle() {
+        return true;
+    }
 
     protected void onSavedInstanceState(Bundle savedInstanceState) {
         if (presenter != null) {
@@ -215,24 +249,28 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
     }
 
     protected void onResume() {
+        state |= STATE_ON_RESUME;
         if (presenter != null) {
             presenter.onResume();
         }
     }
 
     protected void onPause() {
+        state &= ~STATE_ON_RESUME;
         if (presenter != null) {
             presenter.onPause();
         }
     }
 
     protected void onStart() {
+        state |= STATE_ON_START;
         if (presenter != null) {
             presenter.onStart();
         }
     }
 
     protected void onStop() {
+        state &= ~STATE_ON_START;
         if (presenter != null) {
             presenter.onStop();
         }
@@ -252,17 +290,11 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
     }
 
     public final boolean isResume() {
-        if (lifecycle != null) {
-            return lifecycle.isResume();
-        }
-        return false;
+        return (state & STATE_ON_RESUME) != 0;
     }
 
     public final boolean isStart() {
-        if (lifecycle != null) {
-            return lifecycle.isStart();
-        }
-        return false;
+        return (state & STATE_ON_START) != 0;
     }
 
     public final boolean isBinded() {
