@@ -128,7 +128,7 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
             }
         }
         onBinded(rootView, savedInstanceState);
-        if (isCallLifecycle()) {
+        if (isBindCallLifecycle()) {
             callBindLifecycle();
         }
         this.isBinded = true;
@@ -195,7 +195,7 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
         }
 
         if (isBinded) {
-            if (isCallLifecycle()) {
+            if (isBindCallLifecycle()) {
                 callUnbindLifecycle();
             }
             onUnBinded();
@@ -228,7 +228,7 @@ public abstract class ViewDelegate<T extends ViewDelegatePresenter> {
         return context;
     }
 
-    protected boolean isCallLifecycle() {
+    protected boolean isBindCallLifecycle() {
         return true;
     }
 

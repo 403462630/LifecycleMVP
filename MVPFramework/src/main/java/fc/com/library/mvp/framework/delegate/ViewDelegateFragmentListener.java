@@ -51,24 +51,36 @@ public class ViewDelegateFragmentListener implements FragmentLifecycleListener {
         viewDelegate.onCreate(outState);
     }
 
+    private boolean checkCallLifecycle() {
+        return !viewDelegate.isBindCallLifecycle() || viewDelegate.isBinded();
+    }
+
     @Override
     public void onResume() {
-        viewDelegate.onResume();
+        if (checkCallLifecycle()) {
+            viewDelegate.onResume();
+        }
     }
 
     @Override
     public void onStart() {
-        viewDelegate.onStart();
+        if (checkCallLifecycle()) {
+            viewDelegate.onStart();
+        }
     }
 
     @Override
     public void onPause() {
-        viewDelegate.onPause();
+        if (checkCallLifecycle()) {
+            viewDelegate.onPause();
+        }
     }
 
     @Override
     public void onStop() {
-        viewDelegate.onStop();
+        if (checkCallLifecycle()) {
+            viewDelegate.onStop();
+        }
     }
 
     @Override
